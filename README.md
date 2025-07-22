@@ -1,0 +1,1 @@
+"This is a basic TODO application built using Express.js and vanilla HTML/CSS/JS. I'm currently learning backend development, and this project is part of my hands-on practice with Express, routing, JWT-based authentication, and Axios on the frontend. It doesn't use any database — all data is stored in-memory — and the purpose was to understand full-stack flow from scratch."
