@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #74ebd5, #9face6);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .whole {
+      background-color: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .section span {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      color: #4b0082;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      outline: none;
+      border-color: #4b0082;
+      box-shadow: 0 0 5px rgba(75, 0, 130, 0.5);
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4b0082;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #360060;
+    }
+
+    .logout button {
+      width: 100%;
+      background-color: crimson;
+    }
+
+    .logout button:hover {
+      background-color: darkred;
+    }
+
+    #information {
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #information h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    #information p {
+      margin: 5px 0;
+      padding-left: 10px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <div class="whole">
+    <div class="section signup">
+      <span>Signup</span>
+      <input type="text" id="signup-username" placeholder="Username" />
+      <input type="password" id="signup-password" placeholder="Password" />
+      <button onclick="signup()">Submit</button>
+    </div>
+
+    <div class="section signin">
+      <span>Signin</span>
+      <input type="text" id="signin-username" placeholder="Username" />
+      <input type="password" id="signin-password" placeholder="Password" />
+      <button onclick="signin()">Submit</button>
+    </div>
+
+    <div class="section add-todo">
+      <span>Add Todo</span>
+      <input type="text" id="new-todo" placeholder="New Todo" />
+      <button onclick="addTodo()">Add</button>
+    </div>
+
+    <div class="section information" id="information">
+      <!-- Todos will appear here -->
+    </div>
+
+    <div class="logout section">
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script>
+    async function signup() {
+      let username = document.getElementById("signup-username").value;
+      let password = document.getElementById("signup-password").value;
+      await axios.post("http://localhost:3000/signup", {
+        username,
+        password,
+      });
+      document.getElementById("signup-username").value = "";
+      document.getElementById("signup-password").value = "";
+      alert("You are Signed Up");
+    }
+
+    async function signin() {
+      let username = document.getElementById("signin-username").value;
+      let password = document.getElementById("signin-password").value;
+      let response = await axios.post("http://localhost:3000/signin", {
+        username,
+        password,
+      });
+
+      localStorage.setItem("token", response.data.token);
+       document.getElementById("signin-username").value = "";
+      document.getElementById("signin-password").value = "";
+      alert("You are Signed In");
+      getUserInformation();
+    }
+
+    async function getUserInformation() {
+      const response = await axios.get("http://localhost:3000/todos", {
+        headers: {
+          token: localStorage.getItem("token"),
+        },
+      });
+
+      const infoDiv = document.getElementById("information");
+      infoDiv.innerHTML = "<h3>Your Todos:</h3>";
+
+      response.data.todos.forEach((todo) => {
+        const item = document.createElement("p");
+        item.innerText = "• " + todo;
+        infoDiv.appendChild(item);
+      });
+    }
+getUserInformation();
+    async function addTodo() {
+      const todo = document.getElementById("new-todo").value;
+      await axios.post(
+        "http://localhost:3000/add/todo",
+        { todo },
+        {
+          headers: {
+            token: localStorage.getItem("token"),
+          },
+        }
+      );
+      document.getElementById("new-todo").value = "";
+      alert("Todo added!");
+    }
+    
+    function logout() {
+      localStorage.removeItem("token");
+      document.getElementById("information").innerHTML = "";
+      alert("Logged out");
+    }
+
+    getUserInformation(); // Call once on load if token is present
+  </script>
+</body>
+</html>
